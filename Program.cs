@@ -1,3 +1,4 @@
+using BankAccount.Extension;
 using BankAccount.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
+builder.Services.RegisterRepositories();
+//builder.Services.RegisterApiInvoker();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
