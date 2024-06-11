@@ -2,6 +2,7 @@
 using BankAccount.Repository.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static BankAccount.Model.AdminModel;
 
 namespace BankAccount.Controllers
 {
@@ -40,12 +41,12 @@ namespace BankAccount.Controllers
         }
 
         [HttpGet]
-        [Route("MyAccount")]
-        public async Task<IActionResult> MyAccount(int account_number)
+        [Route("MyAccount/{AccountNumber}")]
+        public async Task<IActionResult> MyAccount(long AccountNumber)
         {
             try
             {
-                var AccountDetails = await _customer.GetCustomerById(account_number);
+                var AccountDetails = await _customer.GetAccountById(AccountNumber);
 
                 if (AccountDetails != null && AccountDetails.Any())
                 {
@@ -53,7 +54,7 @@ namespace BankAccount.Controllers
                 }
                 else
                 {
-                    return NotFound("No Account details found.");
+                    return NotFound("No Account details found or Not Activate your account.");
                 }
             }
             catch (Exception ex)
@@ -61,26 +62,70 @@ namespace BankAccount.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
-        
+
+
         [HttpGet]
-        [Route("Transaction")]
-        public async Task<IActionResult> Transaction()
+        [Route("GetTransactions/{accountNumber}")]
+        public async Task<IActionResult> GetTransactions(long accountNumber)
         {
-            return Ok();
+            try
+            {
+                var transactions = await _customer.GetTransactionsByAccountNumber(accountNumber);
+
+                if (transactions != null && transactions.Count > 0)
+                {
+                    return Ok(transactions);
+                }
+                else
+                {
+                    return NotFound("No transactions found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
         [HttpGet]
-        [Route("BalanceEnquriey")]
-        public async Task<IActionResult> BalanceEnquriey()
+        [Route("BalanceEnquriey/{AccountNumber}")]
+        public async Task<IActionResult> BalanceEnquriey(long AccountNumber)
         {
-            return Ok();
+            var balance = await _customer.GetAccountBalanceAsync(AccountNumber);
+            if (balance == null)
+            {
+                return NotFound("Account not found.");
+            }
+
+            return Ok(new { Balance = balance });
         }
 
         [HttpPost]
         [Route("CreateAccount")]
-        public async Task<IActionResult> CreateAccount()
+        public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
         {
-            return Ok();
+            if (request == null)
+            {
+                return BadRequest("Invalid request payload.");
+            }
+
+            try
+            {
+                var (resultMessage, accountNumber) = await _customer.CreateAccountAsync(request);
+
+                if (accountNumber.HasValue)
+                {
+                    return Ok(new { Message = resultMessage, AccountNumber = accountNumber.Value });
+                }
+                else
+                {
+                    return BadRequest(resultMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
         }
 
 
@@ -112,16 +157,41 @@ namespace BankAccount.Controllers
 
         [HttpPost]
         [Route("Withdraw")]
-        public async Task<IActionResult> Withdraw()
+        public async Task<IActionResult> Withdraw( WithdrawalRequest request)
         {
-            return Ok();
+            if (request == null || request.Amount <= 0)
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            var resultMessage = await _customer.WithdrawAsync(request);
+
+            if (resultMessage == "Withdrawal successful.")
+            {
+                return Ok(resultMessage);
+            }
+
+            return BadRequest(resultMessage);
         }
+
 
         [HttpPost]
         [Route("Deposit")]
-        public async Task<IActionResult> Deposit()
+        public async Task<IActionResult> Deposit([FromBody] WithdrawalRequest request)
         {
-            return Ok();
+            if (request == null || request.Amount <= 0)
+            {
+                return BadRequest("Invalid request data.");
+            }
+
+            var resultMessage = await _customer.DepositAsync(request);
+
+            if (resultMessage == "Deposit successful.")
+            {
+                return Ok(resultMessage);
+            }
+
+            return BadRequest(resultMessage);
         }
 
 

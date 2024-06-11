@@ -7,6 +7,13 @@ namespace BankAccount.Repository.Interface
     {
         Task<List<GetCustomer>> GetCustomerById(int CustomerId);
         Task<string> AddNewUser(PostCustomer user);
-        Task<List<GetAccount>> GetAccountById(int account_number);
+        Task<List<GetAccount>> GetAccountById(long account_number);
+        Task<(string resultMessage, long? accountNumber)> CreateAccountAsync(CreateAccountRequest account);
+        Task<List<Transaction>> GetTransactionsByAccountNumber(long accountNumber);
+
+        Task<decimal?> GetAccountBalanceAsync(long accountId);
+
+        Task<string> WithdrawAsync(WithdrawalRequest request);
+        Task<string> DepositAsync(WithdrawalRequest request);
     }
 }

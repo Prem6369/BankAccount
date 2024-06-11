@@ -46,6 +46,7 @@ namespace BankAccount.Extension
         public static IServiceCollection RegisterRepositories(this IServiceCollection services)
         {
             services.AddTransient<ICustomer, CustomerRepository>();
+            services.AddTransient<IAdmin, AdminRepository>();
             //services.AddTransient<loginRepository>();
             //services.AddTransient<ICustomer, customerRepository>();
             //services.AddTransient<ISeller, sellerRepository>();
