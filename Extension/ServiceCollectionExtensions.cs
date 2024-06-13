@@ -1,5 +1,6 @@
 ﻿using BankAccount.Repository;
 using BankAccount.Repository.Interface;
+using BankAccount.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.IdentityModel.Tokens;
@@ -52,12 +53,12 @@ namespace BankAccount.Extension
             //services.AddTransient<ISeller, sellerRepository>();
             return services;
         }
-        //public static IServiceCollection RegisterApiInvoker(this IServiceCollection services)
-        //{
-        //    services.AddHttpClient();
-        //    services.AddTransient<InvokeApi>();
+        public static IServiceCollection RegisterApiInvoker(this IServiceCollection services)
+        {
+            services.AddHttpClient();
+            services.AddTransient<InvokeApi>();
 
-        //    return services;
-        //}
+            return services;
+        }
     }
 }

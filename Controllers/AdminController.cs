@@ -5,7 +5,7 @@ using static BankAccount.Model.AdminModel;
 
 namespace BankAccount.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
     {
@@ -77,7 +77,7 @@ namespace BankAccount.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPost]
         [Route("UpdateCardDetails")]
         public async Task<IActionResult> UpdateCardDetails(CardDetails cardDetails)
         {

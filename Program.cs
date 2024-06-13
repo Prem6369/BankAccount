@@ -11,9 +11,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
-
+builder.Services.AddHttpClient("MyClient", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30); // Set your desired timeout value here
+});
 builder.Services.RegisterRepositories();
-//builder.Services.RegisterApiInvoker();
+builder.Services.RegisterApiInvoker();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

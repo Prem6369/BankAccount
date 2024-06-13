@@ -6,7 +6,7 @@ namespace BankAccount.Repository.Interface
     public interface ICustomer
     {
         Task<List<GetCustomer>> GetCustomerById(int CustomerId);
-        Task<string> AddNewUser(PostCustomer user);
+        Task<(string resultMessage, int customerId)> AddNewUser(PostCustomer user);
         Task<List<GetAccount>> GetAccountById(long account_number);
         Task<(string resultMessage, long? accountNumber)> CreateAccountAsync(CreateAccountRequest account);
         Task<List<Transaction>> GetTransactionsByAccountNumber(long accountNumber);

@@ -1,19 +1,27 @@
 ﻿using BankAccount.Model;
 using BankAccount.Repository.Interface;
+using BankAccount.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Net;
 using static BankAccount.Model.AdminModel;
 
 namespace BankAccount.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     [ApiController]
     public class CustomerController : ControllerBase
     {
         private readonly ICustomer _customer;
-        public CustomerController(ICustomer customer)
+        private readonly InvokeApi _invokeApi;
+        private readonly IConfiguration _configuration;
+
+        public CustomerController(ICustomer customer, InvokeApi invokeApi,IConfiguration configuration)
         {
             _customer = customer;
+            _invokeApi = invokeApi;
+            _configuration = configuration;
         }
 
         #region Get Method
@@ -100,6 +108,13 @@ namespace BankAccount.Controllers
             return Ok(new { Balance = balance });
         }
 
+
+
+
+        #endregion
+
+
+
         [HttpPost]
         [Route("CreateAccount")]
         public async Task<IActionResult> CreateAccount([FromBody] CreateAccountRequest request)
@@ -111,10 +126,20 @@ namespace BankAccount.Controllers
 
             try
             {
+
+                var baseurl = _configuration["ApiClient"];
+                string path = "CreateCard";
+                string app = "CardTransaction";
                 var (resultMessage, accountNumber) = await _customer.CreateAccountAsync(request);
 
                 if (accountNumber.HasValue)
                 {
+                    var requestModel = new
+                    {
+                        CustomerId = request.customerId,
+                        CardType = request.cardType
+                    };
+                    _invokeApi.SendToClient(baseurl,app, path, requestModel);
                     return Ok(new { Message = resultMessage, AccountNumber = accountNumber.Value });
                 }
                 else
@@ -128,19 +153,32 @@ namespace BankAccount.Controllers
             }
         }
 
-
-        #endregion
         [HttpPost]
         [Route("AddCustomer")]
         public async Task<IActionResult> AddCustomer(PostCustomer customer)
         {
             try
             {
-                var resultMessage = await _customer.AddNewUser(customer);
+                var baseurl = _configuration["ApiClient"];
+                string path = "CreateCustomer";
+                string app = "CardTransaction";
+               
+                (string resultMessage, int customerId) = await _customer.AddNewUser(customer);
 
                 if (resultMessage.Contains("successfully"))
                 {
-                    return Ok(resultMessage);
+                    var requestModel = new
+                    {
+                        CustomerId = customerId,
+                        Name = customer.CustomerName,
+                        Age = customer.Age,
+                        Address = customer.Address,
+                        Email = customer.Email,
+                        PhoneNumber = customer.PhoneNumber
+                    };
+
+                    await _invokeApi.SendToClient(baseurl,app,path, requestModel);
+                    return Ok(new { Message = resultMessage, CustomerId = customerId });
                 }
                 else
                 {
@@ -152,6 +190,7 @@ namespace BankAccount.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
 
 
 

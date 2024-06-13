@@ -23,7 +23,7 @@ namespace BankAccount.Repository
             string connects = _configuration.GetConnectionString("connect") ?? "";
             _connect = new SqlConnection(connects);
         }
-
+        #region getmethod
         public async Task<List<GetCustomer>> GetCustomerById(int CustomerId)
         {
             try
@@ -179,7 +179,7 @@ namespace BankAccount.Repository
 
             return transactions;
         }
-
+        #endregion
         #region Post method
         public async Task<(string resultMessage, long? accountNumber)> CreateAccountAsync(CreateAccountRequest account)
         {
@@ -225,12 +225,13 @@ namespace BankAccount.Repository
 
 
 
-        public async Task<string> AddNewUser(PostCustomer user)
+        public async Task<(string resultMessage, int customerId)> AddNewUser(PostCustomer user)
         {
             try
             {
                 Connection();
-                _connect.Open();
+                await _connect.OpenAsync();
+
                 SqlCommand command = new SqlCommand("SP_AddCustomer", _connect);
                 command.CommandType = CommandType.StoredProcedure;
                 command.Parameters.AddWithValue("@customer_name", user.CustomerName);
@@ -241,20 +242,25 @@ namespace BankAccount.Repository
                 command.Parameters.AddWithValue("@phone_number", user.PhoneNumber);
                 command.Parameters.AddWithValue("@identification_type", user.IdentificationType);
                 command.Parameters.AddWithValue("@identification_number", user.IdentificationNumber);
-                var outputMessage = new SqlParameter("@ResultMessage", SqlDbType.NVarChar, 250)
-                {
-                    Direction = ParameterDirection.Output
-                };
-                command.Parameters.Add(outputMessage);
+
+                var customerIdParameter = command.Parameters.Add("@customer_id", SqlDbType.Int);
+                customerIdParameter.Direction = ParameterDirection.Output;
+
+                var outputMessageParameter = command.Parameters.Add("@ResultMessage", SqlDbType.NVarChar, 250);
+                outputMessageParameter.Direction = ParameterDirection.Output;
 
                 await command.ExecuteNonQueryAsync();
 
-                return outputMessage.Value.ToString();
+                int customerId = Convert.ToInt32(customerIdParameter.Value);
+                string resultMessage = Convert.ToString(outputMessageParameter.Value)??"";
 
+                return (resultMessage, customerId);
             }
             finally
             {
-                _connect.Close();
+                
+                    await _connect.CloseAsync();
+               
             }
         }
 
