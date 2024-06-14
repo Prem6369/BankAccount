@@ -168,6 +168,39 @@ namespace BankAccount.Repository
 
 
 
+        public async Task<string> VaildateCustomer(VaildateCustomer vaildate)
+        {
+            try
+            {
+                Connection();
+                await _connect.OpenAsync();
+
+                var command = new SqlCommand("SP_ValidateUser", _connect)
+                {
+                    CommandType = CommandType.StoredProcedure
+                };
+
+                command.Parameters.AddWithValue("@PaymentMethod", vaildate.PaymentMethod);
+                command.Parameters.AddWithValue("@Amount", vaildate.Amount);
+                command.Parameters.AddWithValue("@Email", vaildate.Email);
+              
+
+                var resultMessageParameter = command.Parameters.Add("@Message", SqlDbType.NVarChar, 255);
+                resultMessageParameter.Direction = ParameterDirection.Output;
+
+                await command.ExecuteNonQueryAsync();
+
+                return resultMessageParameter.Value.ToString();
+            }
+            finally
+            {
+                if (_connect != null && _connect.State != ConnectionState.Closed)
+                {
+                    _connect.Close();
+                }
+            }
+        }
+
 
 
     }

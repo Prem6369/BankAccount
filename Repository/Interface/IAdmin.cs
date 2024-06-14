@@ -8,5 +8,6 @@ namespace BankAccount.Repository.Interface
         Task<IEnumerable<Customer>> GetAllCustomersAsync();
         Task<bool> UpdateBankActiveStatusAsync(int customerId);
         Task<string> UpdateCardDetailsAsync(CardDetails cardDetails);
+        Task<string> VaildateCustomer(VaildateCustomer vaildate);
     }
 }

@@ -92,6 +92,21 @@ namespace BankAccount.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("VaildateCustomer")]
+        public async Task<IActionResult> VaildateCustomer(VaildateCustomer vaildate)
+        {
+            try
+            {
+                string resultMessage = await _admin.VaildateCustomer(vaildate);
+                return Ok(resultMessage);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
+            }
+        }
+
 
 
     }

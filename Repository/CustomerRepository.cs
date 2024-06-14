@@ -181,6 +181,8 @@ namespace BankAccount.Repository
         }
         #endregion
         #region Post method
+
+
         public async Task<(string resultMessage, long? accountNumber)> CreateAccountAsync(CreateAccountRequest account)
         {
             try
@@ -192,6 +194,7 @@ namespace BankAccount.Repository
                 command.CommandType = CommandType.StoredProcedure;
 
                 command.Parameters.AddWithValue("@customer_id", account.customerId);
+                command.Parameters.AddWithValue("@email", account.email);
                 command.Parameters.AddWithValue("@account_type", account.accountType);
                 command.Parameters.AddWithValue("@balance", account.balance);
                 command.Parameters.AddWithValue("@card_type", account.cardType);
@@ -220,7 +223,6 @@ namespace BankAccount.Repository
                 await _connect.CloseAsync();
             }
         }
-
 
 
 

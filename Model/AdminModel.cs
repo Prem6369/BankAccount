@@ -22,6 +22,7 @@
         public class CreateAccountRequest
         {
             public int customerId { get; set; }
+            public string email { get; set; }
 
             public string accountType { get; set; }
             public decimal balance { get; set; }
@@ -65,6 +66,13 @@
             public string CardType { get; set; }
             public string CardNumber { get; set; }
             public DateTime CardExpiryDate { get; set; }
+        }
+
+        public class VaildateCustomer
+        {
+            public string PaymentMethod { get; set; }
+            public string Email { get; set; }
+            public decimal Amount { get; set; }
         }
 
     }
