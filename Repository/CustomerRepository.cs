@@ -226,7 +226,6 @@ namespace BankAccount.Repository
 
 
 
-
         public async Task<(string resultMessage, int customerId)> AddNewUser(PostCustomer user)
         {
             try
@@ -234,37 +233,41 @@ namespace BankAccount.Repository
                 Connection();
                 await _connect.OpenAsync();
 
-                SqlCommand command = new SqlCommand("SP_AddCustomer", _connect);
-                command.CommandType = CommandType.StoredProcedure;
-                command.Parameters.AddWithValue("@customer_name", user.CustomerName);
-                command.Parameters.AddWithValue("@age", user.Age);
-                command.Parameters.AddWithValue("@gender", user.Gender);
-                command.Parameters.AddWithValue("@address", user.Address);
-                command.Parameters.AddWithValue("@email", user.Email);
-                command.Parameters.AddWithValue("@phone_number", user.PhoneNumber);
-                command.Parameters.AddWithValue("@identification_type", user.IdentificationType);
-                command.Parameters.AddWithValue("@identification_number", user.IdentificationNumber);
+                using (SqlCommand command = new SqlCommand("SP_AddCustomer", _connect))
+                {
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.AddWithValue("@customer_name", user.CustomerName);
+                    command.Parameters.AddWithValue("@age", user.Age);
+                    command.Parameters.AddWithValue("@gender", user.Gender);
+                    command.Parameters.AddWithValue("@address", user.Address);
+                    command.Parameters.AddWithValue("@email", user.Email);
+                    command.Parameters.AddWithValue("@phone_number", user.PhoneNumber);
+                    command.Parameters.AddWithValue("@identification_type", user.IdentificationType);
+                    command.Parameters.AddWithValue("@identification_number", user.IdentificationNumber);
 
-                var customerIdParameter = command.Parameters.Add("@customer_id", SqlDbType.Int);
-                customerIdParameter.Direction = ParameterDirection.Output;
+                    var customerIdParameter = command.Parameters.Add("@customer_id", SqlDbType.Int);
+                    customerIdParameter.Direction = ParameterDirection.Output;
 
-                var outputMessageParameter = command.Parameters.Add("@ResultMessage", SqlDbType.NVarChar, 250);
-                outputMessageParameter.Direction = ParameterDirection.Output;
+                    var outputMessageParameter = command.Parameters.Add("@ResultMessage", SqlDbType.NVarChar, 250);
+                    outputMessageParameter.Direction = ParameterDirection.Output;
 
-                await command.ExecuteNonQueryAsync();
+                    await command.ExecuteNonQueryAsync();
 
-                int customerId = Convert.ToInt32(customerIdParameter.Value);
-                string resultMessage = Convert.ToString(outputMessageParameter.Value)??"";
+                    int customerId = customerIdParameter.Value != DBNull.Value ? Convert.ToInt32(customerIdParameter.Value) : 0;
+                    string resultMessage = outputMessageParameter.Value != DBNull.Value ? outputMessageParameter.Value.ToString() : string.Empty;
 
-                return (resultMessage, customerId);
+                    return (resultMessage, customerId);
+                }
             }
             finally
             {
-                
+                if (_connect != null && _connect.State == ConnectionState.Open)
+                {
                     await _connect.CloseAsync();
-               
+                }
             }
         }
+
 
 
         public async Task<string> WithdrawAsync(WithdrawalRequest request)
